@@ -168,7 +168,7 @@ class CPUFF:
                 # Display the hex, ask for a new value
                 print("Current Frequency Vector:\n")
                 print("{} of {}: {} ({}00 MHz)\n".format(i+1,total,freq,int(freq,16)))
-                new = self.u.grab("Enter the new min hex freq (800Mhz would be 08, 1300Mhz would be 0C):  ").upper()
+                new = self.u.grab("Enter the new min hex freq (800Mhz would be 08, 1300Mhz would be 0D):  ").upper()
                 if new == "Q":
                     exit()
                 new = new.replace("0X","")
