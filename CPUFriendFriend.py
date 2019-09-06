@@ -11,7 +11,7 @@ class CPUFF:
         self.out     = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Results")
         self.plist = None
         self.plist_data = None
-        self.rc_url = "https://raw.githubusercontent.com/acidanthera/CPUFriend/master/ResourceConverter/ResourceConverter.sh"
+        self.rc_url = "https://raw.githubusercontent.com/acidanthera/CPUFriend/master/Tools/ResourceConverter.sh"
         self.iasl_url = "https://bitbucket.org/RehabMan/acpica/downloads/iasl.zip"
         self.iasl = self.check_iasl()
         self.freq_path = "/System/Library/Extensions/IOPlatformPluginFamily.kext/Contents/PlugIns/X86PlatformPlugin.kext/Contents/Resources"
