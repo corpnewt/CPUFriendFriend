@@ -37,4 +37,6 @@ $ cd CPUFriendFriend
 $ ./CPUFriendFriend.command
 ```
 
-Once completed, you will be presented with both SSDT and Kext versions of CPUFriendDataProvider data.  Choose the method that you prefer, and add it along with CPUFriend.kext to CLOVER.
+*Note: Enter desired values each time you are prompted.*
+
+Once completed, you will be presented with both SSDT and Kext versions of CPUFriendDataProvider data. You can choose to either install the generated SSDT or Kext. Be sure to also include CPUFriend.kext. The generated plist file can be ignored.
