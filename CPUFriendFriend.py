@@ -17,9 +17,14 @@ class CPUFF:
         self.freq_path = "/System/Library/Extensions/IOPlatformPluginFamily.kext/Contents/PlugIns/X86PlatformPlugin.kext/Contents/Resources"
         self.has_epp  = False
         self.epp_find = "6570700000000000000000000000000000000000"
+        self.has_perfbias = False
+        self.perfbias_find = "706572662D626961730000000000000000000000"
         self.board = self._get_current_board()
         self.smbios = self._get_current_smbios()
         self.rc_path = self._check_rc(self.rc_url)
+        self.mylfm = None
+        self.myepp = None
+        self.myperfbias = None
 
     def check_iasl(self):
         target = os.path.join(self.scripts, "iasl")
@@ -99,37 +104,43 @@ class CPUFF:
         elif epp_int < 128:
             epp_desc = "Balanced Performance"
         elif epp_int < 192:
-            epp_desc = "Balanced Power"
+            epp_desc = "Balanced Power Savings"
         else:
-            epp_desc = "Power Saving"
+            epp_desc = "Maximize Power Savings"
         return epp_desc
 
     def _get_freq_info(self,x):
-        freq = epp = None
+        freq = epp = perfbias = None
         data = x if not isinstance(x,plistlib.Data) else x.data
         str_data = self._decode(binascii.hexlify(data)).upper()
         freq = str_data[8:10]
         if self.epp_find in str_data:
             epp = str_data.split(self.epp_find)[1][:2]
-        return (freq,epp)
+
+        if self.perfbias_find in str_data:
+            perfbias = str_data.split(self.perfbias_find)[1][:2]
+        return (freq,epp,perfbias)
 
     def _display_desc(self,desc):
         self.u.head()
         print("")
-        print("Current Board:  {}".format(self.board))
-        print("Current SMBIOS: {}".format(self.smbios))
-        print("")
-        for i,x in enumerate(desc):
-            print(" {}. {}00MHz --> {}00MHz".format(i+1,int(x["start_freq"],16),int(x["end_freq"],16)))
-            if "start_epp" in x:
-                print("  -->{} ({}) --> {} ({})".format(
-                    x["start_epp"],
-                    self._get_epp_desc(x["start_epp"]),
-                    x["end_epp"],
-                    self._get_epp_desc(x["end_epp"])
-                ))
-        if len(desc):
+        if self.mylfm is None:
+            print("Current Board:  {}".format(self.board))
+            print("Current SMBIOS: {}".format(self.smbios))
             print("")
+            for i,x in enumerate(desc):
+                print(" {}. {}00MHz --> {}00MHz".format(i+1,int(x["start_freq"],16),int(x["end_freq"],16)))
+                if "start_epp" in x:
+                    print("  -->{} ({}) --> {} ({})".format(
+                        x["start_epp"],
+                        self._get_epp_desc(x["start_epp"]),
+                        x["end_epp"],
+                        self._get_epp_desc(x["end_epp"])
+                        ))
+                if len(desc):
+                    print("")
+        else:
+            print("Building CPUFriendDataProvider.")
 
     def main(self):
         if self.board.lower() == "unknown":
@@ -144,12 +155,13 @@ class CPUFF:
                 with open(self.plist,"rb") as f:
                     self.plist_data = plist.load(f)
             except Exception as e:
-                self.u.head("CPUFriendFriend")
-                print("")
-                print("Could not load {}!\nAborting!\n".format(self.board+".plist"))
-                print(e)
-                print("")
-                exit(1)
+                if self.mylfm is None:
+                    self.u.head("CPUFriendFriend")
+                    print("")
+                    print("Could not load {}!\nAborting!\n".format(self.board+".plist"))
+                    print(e)
+                    print("")
+                    exit(1)
         if self.plist_data.get("IOPlatformPowerProfile",{}).get("FrequencyVectors",None) == None:
             self.u.head("CPUFriendFriend")
             print("")
@@ -159,18 +171,24 @@ class CPUFF:
         new_desc = []
         total = len(self.plist_data.get("IOPlatformPowerProfile",{}).get("FrequencyVectors",[]))
         for i,x in enumerate(self.plist_data.get("IOPlatformPowerProfile",{}).get("FrequencyVectors",[])):
-            freq,epp = self._get_freq_info(x)
+            freq,epp,perfbias = self._get_freq_info(x)
             data = x if not isinstance(x,plistlib.Data) else x.data
             str_data = self._decode(binascii.hexlify(data)).upper()
             curr_desc = {"start_freq":freq}
             while True:
                 self._display_desc(new_desc)
-                # Display the hex, ask for a new value
-                print("Current Frequency Vector:\n")
-                print("{} of {}: {} ({}00 MHz)\n".format(i+1,total,freq,int(freq,16)))
-                new = self.u.grab("Enter the new min hex freq (800Mhz would be 08, 1300Mhz would be 0D):  ").upper()
-                if new == "Q":
-                    exit()
+                if self.mylfm is None:
+                    # Display the hex, ask for a new value
+                    print("Low Frequency Mode (LFM):\n")
+                    print("This option defines the lowest operating frequency for your processor. Refer to your CPU specifications on Intel's website, for your CPUs LFM or TDP-Down frequency.")
+                    print("\nCurrent Setting:    0x{} ({}00 MHz)\n".format(freq,int(freq,16)))
+                    print("")
+                    new = self.u.grab("Enter the value for your CPU (For 800Mhz enter 08, for 1300Mhz enter 0D):  ").upper()
+                    if new == "Q":
+                        exit()
+                    self.mylfm = new
+                else:
+                    new = self.mylfm
                 new = new.replace("0X","")
                 new = "".join([x for x in new if x in "0123456789ABCDEF"])
                 if len(new) != 2:
@@ -181,19 +199,29 @@ class CPUFF:
                 break
             if epp:
                 self._display_desc(new_desc)
-                print("EPP Range:")
-                print("  0x00-0x3F    :    Performance")
-                print("  0x40-0x7F    :    Balance performance")
-                print("  0x80-0xBF    :    Balance power")
-                print("  0xC0-0xFF    :    Power")
-                print("")
-                curr_desc["start_epp"] = epp
+                if self.myepp is None:
+                    print("Energy Performance Preference (EPP):")
+                    print("HWP EPP adjustment configures the intel p_state preference policy.")
+                    print("\nEPP Ranges:")
+                    print("  0x00-0x3F    :    Performance")
+                    print("  0x40-0x7F    :    Balanced Performance")
+                    print("  0x80-0xBF    :    Balanced Power Savings")
+                    print("  0xC0-0xFF    :    Power")
+                    print("Settings found in modern Apple computers:")
+                    print("  0x90         :    Modern MacBook Pro")
+                    print("  0x80         :    Modern MacBook Air")
+                    print("")
+                    curr_desc["start_epp"] = epp
                 while True:
-                    # Display the hex, ask for a new value
-                    print("{} of {}: EPP {} ({})\n".format(i+1,total,epp,self._get_epp_desc(epp)))
-                    new = self.u.grab("Enter the new EPP value in hex:  ").upper()
-                    if new == "Q":
-                        exit()
+                    if self.myepp is None:
+                        # Display the hex, ask for a new value
+                        print("Current Setting: {} ({})\n".format(epp,self._get_epp_desc(epp)))
+                        new = self.u.grab("Enter the new EPP value in hex:  ").upper()
+                        if new == "Q":
+                            exit()
+                        self.myepp = new
+                    else:
+                        new = self.myepp
                     new = new.replace("0X","")
                     new = "".join([x for x in new if x in "0123456789ABCDEF"])
                     if len(new) != 2:
@@ -201,6 +229,37 @@ class CPUFF:
                     # Save the changes
                     ind = str_data.find(self.epp_find)
                     str_data = str_data[:ind+len(self.epp_find)]+new+str_data[ind+len(self.epp_find)+2:]
+                    curr_desc["end_epp"] = new
+                    break
+            if perfbias:
+                self._display_desc(new_desc)
+                if self.myperfbias is None:
+                    print("Perf Bias:")
+                    print ("Perf-Bias is a performance and energy bias hint used to specify power preference.  Expressed as a range, 0 represents preference for performance, 15 represents preference for maximum power saving.")
+                    print("\nPerf Bias Range:")
+                    print("  0x00-0x15")
+                    print("Settings found in modern Apple computers:")
+                    print("  0x05              :    Modern MacBook Pro")
+                    print("  0x07              :    Modern MacBook Air")
+                    print("")
+                    curr_desc["start_perfbias"] = perfbias
+                while True:
+                    if self.myperfbias is None:
+                        # Display the hex, ask for a new value
+                        print("Current Setting: {} \n".format(perfbias))
+                        new = self.u.grab("Enter the new PerfBias value in hex:  ").upper()
+                        if new == "Q":
+                            exit()
+                        self.myperfbias = new
+                    else:
+                        new = self.myperfbias
+                    new = new.replace("0X","")
+                    new = "".join([x for x in new if x in "0123456789ABCDEF"])
+                    if len(new) != 2:
+                        continue
+                    # Save the changes
+                    ind = str_data.find(self.perfbias_find)
+                    str_data = str_data[:ind+len(self.perfbias_find)]+new+str_data[ind+len(self.perfbias_find)+2:]
                     curr_desc["end_epp"] = new
                     break
             new_desc.append(curr_desc)

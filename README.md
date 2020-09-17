@@ -16,6 +16,8 @@ D
 
 Enter 0D to set the LFM attribute to 1300MHz.  For the most common TDP-down value of 800MHz use 08.
 
+To find the appropriate frequency for your system, refer to Intel's CPU documentation for your processor.  The LFM frequency may also be documented as TDP-Down.
+
 ## Energy Performance Preference (EPP)
 
 The EPP value dictates how quickly the CPU will scale from the lowest TDP to full clock rate or turbo.  The EPP accepts a range from 00 to C0, however the table below provides general guidance and are the values used by other operating systems.
@@ -28,6 +30,10 @@ The EPP value dictates how quickly the CPU will scale from the lowest TDP to ful
 |0xC0|Max Power saving|
 
 A value of 00 will minimize the time to scale the CPU, providing the best performance while C0 will preference battery life and scale more slowly.
+
+## Perf Bias
+
+Perf Bias is a register on many modern Intel Processors which sets a policy preference for performance vs energy savings.  Perf Bias is a configurable dial ranging from 0 (Performance) to 15 (Energy Savings).  The processor utilizes perf bias to help influence how the processor utilizes C and P states.
 
 ## Execution
 
