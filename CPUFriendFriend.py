@@ -208,7 +208,7 @@ class CPUFF:
                     print("  0x80-0xBF    :    Balanced Power Savings")
                     print("  0xC0-0xFF    :    Power")
                     print("Settings found in modern Apple computers:")
-                    print("  0x00         :    iMac")
+                    print("  0x00         :    Modern iMac")
                     print("  0x90         :    Modern MacBook Pro")
                     print("  0x80         :    Modern MacBook Air")
                     print("")
