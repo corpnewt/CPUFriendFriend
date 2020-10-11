@@ -289,7 +289,7 @@ class CPUFF:
         print("  * Power Optimized Visualizers")
         print("")
         while True:
-            new = self.u.grab("Enable these features(y/N):  ").upper()
+            new = self.u.grab("Enable these features (y/N):  ").upper()
             if new == "Y":
                 self.plist_data["IOPlatformPowerProfile"]["power_reduced_playback"] = True
                 self.plist_data["IOPlatformPowerProfile"]["thermally_optimized_xcode"] = True
