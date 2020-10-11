@@ -270,6 +270,24 @@ class CPUFF:
                 new_freq.append(plistlib.Data(binascii.unhexlify(str_data)))
             else:
                 new_freq.append(binascii.unhexlify(str_data.encode("utf-8")))
+        print("Additional Energy Savings Options:")
+        print("The MacBook Air SMBIOS includes additional properties for power savings, these properties include the following:")
+        print("\n")
+        print("  * Power Reduced Video Playback")
+        print("  * Thermally Optimized Xcode")
+        print("  * Power Optimized Screensavers")
+        print("  * Power Optimized Slideshows")
+        print("")
+        while True:
+            new = self.u.grab("Enable these features(y/N):  ").upper()
+            if new == "Y":
+                self.plist_data["power_reduced_playback"] = True
+                self.plist_data["thermally_optimized_xcode"] = True
+                self.plist_data["optimized_screensavers"] = True
+                self.plist_data["optimized_slideshows"] = True
+            else:
+                print("Skipping.")
+            break
         # Save the changes
         self._display_desc(new_desc)
         print("Saving to {}...".format(self.board+".plist"))
