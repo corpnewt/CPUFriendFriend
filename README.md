@@ -7,6 +7,7 @@ This Py script will inspect the frequency vectors of the X86PlatformPlugin plist
 LFM is the lowest frequency at which your CPU should operate when completely idle.  This is the first configuration item prompted by CPUFriendFriend.  It allows you the opportunity to optimize beyond what Apple configures as a default for each model, as it may not be the correct match for your CPU.  To determine the LFM, look your CPU up on Intel's Ark website and convert the TDP-down frequency to Hex.
 
 ### Example
+
 To convert the default frequency of 1300MHz to Hex, convert only the number in GHz.
 
 ```
@@ -34,6 +35,17 @@ A value of 00 will minimize the time to scale the CPU, providing the best perfor
 ## Perf Bias
 
 Perf Bias is a register on many modern Intel Processors which sets a policy preference for performance vs energy savings.  Perf Bias is a configurable dial ranging from 0 (Performance) to 15 (Energy Savings).  The processor utilizes perf bias to help influence how the processor utilizes C and P states.
+
+## Additional Energy Savings
+
+The MacBook Air SMBIOS includes several additional properties to improve power savings, these properties are listed below.  To enable, simply select yes or no when prompted.
+
+* Power Reduced Video Playback
+* Thermally Optimized Xcode
+* Power Optimized Screensavers
+* Power Optimized Slideshows
+* Power Optimized PhotoBooth
+* Power Optimized Visualizers
 
 ## Execution
 

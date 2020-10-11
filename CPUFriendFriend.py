@@ -9,6 +9,7 @@ class CPUFF:
         self.r = run.Run()
         self.scripts = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Scripts")
         self.out     = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Results")
+        self.processor = self.r.run({"args":['/usr/sbin/sysctl', "-n", "machdep.cpu.brand_string"]})[0].strip()
         self.plist = None
         self.plist_data = None
         self.rc_url = "https://raw.githubusercontent.com/acidanthera/CPUFriend/master/Tools/ResourceConverter.sh"
@@ -125,6 +126,7 @@ class CPUFF:
         self.u.head()
         print("")
         if self.mylfm is None:
+            print("Current CPU:    {}".format(self.processor))
             print("Current Board:  {}".format(self.board))
             print("Current SMBIOS: {}".format(self.smbios))
             print("")
@@ -180,10 +182,16 @@ class CPUFF:
                 if self.mylfm is None:
                     # Display the hex, ask for a new value
                     print("Low Frequency Mode (LFM):\n")
-                    print("This option defines the lowest operating frequency for your processor. Refer to your CPU specifications on Intel's website, for your CPUs LFM or TDP-Down frequency.")
-                    print("\nCurrent Setting:    0x{} ({}00 MHz)\n".format(freq,int(freq,16)))
-                    print("")
-                    new = self.u.grab("Enter the value for your CPU (For 800Mhz enter 08, for 1300Mhz enter 0D):  ").upper()
+                    print("This is the lowest frequency-voltage operating point for your processor. Refer to Intel's ARK site for your processor's LFM setting. If no LFM is defined for your processor, use the default.")
+                    print("\nFrequency   :   Hex Value")
+                    print("  800MHz      :     0x08")
+                    print("  900MHz      :     0x09")
+                    print("  1000MHz     :     0x0A")
+                    print("  1100MHz     :     0x0B")
+                    print("  1200MHz     :     0x0C")
+                    print("  1300MHz     :     0x0D")
+                    print("\nCurrent Setting:    {} ({}00 MHz)\n".format(freq,int(freq,16)))
+                    new = self.u.grab("Enter the value for your CPU:  ").upper()
                     if new == "Q":
                         exit()
                     self.mylfm = new
