@@ -277,14 +277,19 @@ class CPUFF:
         print("  * Thermally Optimized Xcode")
         print("  * Power Optimized Screensavers")
         print("  * Power Optimized Slideshows")
+        print("  * Power Optimized PhotoBooth")
+        print("  * Power Optimized Visualizers")
         print("")
         while True:
             new = self.u.grab("Enable these features(y/N):  ").upper()
             if new == "Y":
-                self.plist_data["power_reduced_playback"] = True
-                self.plist_data["thermally_optimized_xcode"] = True
-                self.plist_data["optimized_screensavers"] = True
-                self.plist_data["optimized_slideshows"] = True
+                self.plist_data["IOPlatformPowerProfile"]["power_reduced_playback"] = True
+                self.plist_data["IOPlatformPowerProfile"]["thermally_optimized_xcode"] = True
+                self.plist_data["IOPlatformPowerProfile"]["optimized_screensavers"] = True
+                self.plist_data["IOPlatformPowerProfile"]["optimized_slideshows"] = True
+                self.plist_data["IOPlatformPowerProfile"]["optimized_photobooth"] = True
+                self.plist_data["IOPlatformPowerProfile"]["optimized_visualizers"] = True
+
             else:
                 print("Skipping.")
             break
