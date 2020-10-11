@@ -289,7 +289,6 @@ class CPUFF:
                 self.plist_data["IOPlatformPowerProfile"]["optimized_slideshows"] = True
                 self.plist_data["IOPlatformPowerProfile"]["optimized_photobooth"] = True
                 self.plist_data["IOPlatformPowerProfile"]["optimized_visualizers"] = True
-
             else:
                 print("Skipping.")
             break
