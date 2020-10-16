@@ -111,7 +111,7 @@ class CPUFF:
 
     def _get_freq_info(self,x):
         freq = epp = perfbias = None
-        data = x if not isinstance(x,plistlib.Data) else x.data
+        data = plist.extract_data(x)
         str_data = self._decode(binascii.hexlify(data)).upper()
         freq = str_data[8:10]
         if self.epp_find in str_data:
@@ -172,7 +172,7 @@ class CPUFF:
         total = len(self.plist_data.get("IOPlatformPowerProfile",{}).get("FrequencyVectors",[]))
         for i,x in enumerate(self.plist_data.get("IOPlatformPowerProfile",{}).get("FrequencyVectors",[])):
             freq,epp,perfbias = self._get_freq_info(x)
-            data = x if not isinstance(x,plistlib.Data) else x.data
+            data = plist.extract_data(x)
             str_data = self._decode(binascii.hexlify(data)).upper()
             curr_desc = {"start_freq":freq}
             while True:
@@ -264,10 +264,7 @@ class CPUFF:
                     break
             new_desc.append(curr_desc)
             # Got the new data - convert it and store it
-            if sys.version_info < (3, 0):
-                new_freq.append(plistlib.Data(binascii.unhexlify(str_data)))
-            else:
-                new_freq.append(binascii.unhexlify(str_data.encode("utf-8")))
+            new_freq.append(plist.wrap_data(binascii.unhexlify(str_data) if sys.version_info > (3,0) else binascii.unhexlify(str_data)))
         # Save the changes
         self._display_desc(new_desc)
         print("Saving to {}...".format(self.board+".plist"))
