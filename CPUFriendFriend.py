@@ -217,8 +217,9 @@ class CPUFF:
                     print("  0xC0-0xFF    :    Power")
                     print("Settings found in modern Apple computers:")
                     print("  0x00         :    Modern iMac")
-                    print("  0x90         :    Modern MacBook Pro")
+                    print("  0x20         :    Modern Mac Mini")
                     print("  0x80         :    Modern MacBook Air")
+                    print("  0x90         :    Modern MacBook Pro")
                     print("")
                     curr_desc["start_epp"] = epp
                 while True:
@@ -249,7 +250,7 @@ class CPUFF:
                     print("  0x00-0x15")
                     print("Settings found in modern Apple computers:")
                     print("  0x01              :    Modern iMac")
-                    print("  0x05              :    Modern MacBook Pro")
+                    print("  0x05              :    Modern MacBook Pro & Mac Mini")
                     print("  0x07              :    Modern MacBook Air")
                     print("")
                     curr_desc["start_perfbias"] = perfbias
