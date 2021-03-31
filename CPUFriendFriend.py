@@ -181,7 +181,7 @@ class CPUFF:
                     # Display the hex, ask for a new value
                     print("Low Frequency Mode (LFM):\n")
                     print("This option defines the lowest operating frequency for your processor. Refer to your CPU specifications on Intel's website, for your CPUs LFM or TDP-Down frequency.")
-                    print("\nCurrent Setting:    0x{} ({}00 MHz)\n".format(freq,int(freq,16)))
+                    print("\nDefault Setting:    0x{} ({}00 MHz)\n".format(freq,int(freq,16)))
                     print("")
                     new = self.u.grab("Enter the value for your CPU (For 800Mhz enter 08, for 1300Mhz enter 0D):  ").upper()
                     if new == "Q":
@@ -215,7 +215,7 @@ class CPUFF:
                 while True:
                     if self.myepp is None:
                         # Display the hex, ask for a new value
-                        print("Current Setting: {} ({})\n".format(epp,self._get_epp_desc(epp)))
+                        print("Default Setting: {} ({})\n".format(epp,self._get_epp_desc(epp)))
                         new = self.u.grab("Enter the new EPP value in hex:  ").upper()
                         if new == "Q":
                             exit()
@@ -246,7 +246,7 @@ class CPUFF:
                 while True:
                     if self.myperfbias is None:
                         # Display the hex, ask for a new value
-                        print("Current Setting: {} \n".format(perfbias))
+                        print("Default Setting: {} \n".format(perfbias))
                         new = self.u.grab("Enter the new PerfBias value in hex:  ").upper()
                         if new == "Q":
                             exit()
