@@ -225,7 +225,7 @@ class CPUFF:
                 while True:
                     if self.myepp is None:
                         # Display the hex, ask for a new value
-                        print("Current Setting: {} ({})\n".format(epp,self._get_epp_desc(epp)))
+                        print("Default Setting: {} ({})\n".format(epp,self._get_epp_desc(epp)))
                         new = self.u.grab("Enter the new EPP value in hex:  ").upper()
                         if new == "Q":
                             exit()
@@ -257,7 +257,7 @@ class CPUFF:
                 while True:
                     if self.myperfbias is None:
                         # Display the hex, ask for a new value
-                        print("Current Setting: {} \n".format(perfbias))
+                        print("Default Setting: {} \n".format(perfbias))
                         new = self.u.grab("Enter the new PerfBias value in hex:  ").upper()
                         if new == "Q":
                             exit()
