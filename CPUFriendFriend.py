@@ -9,6 +9,7 @@ class CPUFF:
         self.r = run.Run()
         self.scripts = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Scripts")
         self.out     = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Results")
+        self.processor = self.r.run({"args":['/usr/sbin/sysctl', "-n", "machdep.cpu.brand_string"]})[0].strip()
         self.plist = None
         self.plist_data = None
         self.rc_url = "https://raw.githubusercontent.com/acidanthera/CPUFriend/master/Tools/ResourceConverter.sh"
@@ -125,6 +126,7 @@ class CPUFF:
         self.u.head()
         print("")
         if self.mylfm is None:
+            print("Current CPU:    {}".format(self.processor))
             print("Current Board:  {}".format(self.board))
             print("Current SMBIOS: {}".format(self.smbios))
             print("")
@@ -180,10 +182,16 @@ class CPUFF:
                 if self.mylfm is None:
                     # Display the hex, ask for a new value
                     print("Low Frequency Mode (LFM):\n")
-                    print("This option defines the lowest operating frequency for your processor. Refer to your CPU specifications on Intel's website, for your CPUs LFM or TDP-Down frequency.")
-                    print("\nDefault Setting:    0x{} ({}00 MHz)\n".format(freq,int(freq,16)))
-                    print("")
-                    new = self.u.grab("Enter the value for your CPU (For 800Mhz enter 08, for 1300Mhz enter 0D):  ").upper()
+                    print("This is the lowest frequency-voltage operating point for your processor. Refer to Intel's ARK site for your processor's LFM setting. If no LFM is defined for your processor, use the default.")
+                    print("\nFrequency   :   Hex Value")
+                    print("  800MHz      :     0x08")
+                    print("  900MHz      :     0x09")
+                    print("  1000MHz     :     0x0A")
+                    print("  1100MHz     :     0x0B")
+                    print("  1200MHz     :     0x0C")
+                    print("  1300MHz     :     0x0D")
+                    print("\nDefault Setting:    {} ({}00 MHz)\n".format(freq,int(freq,16)))
+                    new = self.u.grab("Enter the value for your CPU:  ").upper()
                     if new == "Q":
                         exit()
                     self.mylfm = new
@@ -208,8 +216,10 @@ class CPUFF:
                     print("  0x80-0xBF    :    Balanced Power Savings")
                     print("  0xC0-0xFF    :    Power")
                     print("Settings found in modern Apple computers:")
-                    print("  0x90         :    Modern MacBook Pro")
+                    print("  0x00         :    Modern iMac")
+                    print("  0x20         :    Modern Mac Mini")
                     print("  0x80         :    Modern MacBook Air")
+                    print("  0x90         :    Modern MacBook Pro")
                     print("")
                     curr_desc["start_epp"] = epp
                 while True:
@@ -239,7 +249,8 @@ class CPUFF:
                     print("\nPerf Bias Range:")
                     print("  0x00-0x15")
                     print("Settings found in modern Apple computers:")
-                    print("  0x05              :    Modern MacBook Pro")
+                    print("  0x01              :    Modern iMac")
+                    print("  0x05              :    Modern MacBook Pro & Mac Mini")
                     print("  0x07              :    Modern MacBook Air")
                     print("")
                     curr_desc["start_perfbias"] = perfbias
@@ -265,6 +276,28 @@ class CPUFF:
             new_desc.append(curr_desc)
             # Got the new data - convert it and store it
             new_freq.append(plist.wrap_data(binascii.unhexlify(str_data) if sys.version_info > (3,0) else binascii.unhexlify(str_data)))
+        print("Additional Energy Savings Options:")
+        print("The MacBook Air SMBIOS includes additional properties for power savings, these properties include the following:")
+        print("\n")
+        print("  * Power Reduced Video Playback")
+        print("  * Thermally Optimized Xcode")
+        print("  * Power Optimized Screensavers")
+        print("  * Power Optimized Slideshows")
+        print("  * Power Optimized PhotoBooth")
+        print("  * Power Optimized Visualizers")
+        print("")
+        while True:
+            new = self.u.grab("Enable these features (y/N):  ").upper()
+            if new == "Y":
+                self.plist_data["IOPlatformPowerProfile"]["power_reduced_playback"] = True
+                self.plist_data["IOPlatformPowerProfile"]["thermally_optimized_xcode"] = True
+                self.plist_data["IOPlatformPowerProfile"]["optimized_screensavers"] = True
+                self.plist_data["IOPlatformPowerProfile"]["optimized_slideshows"] = True
+                self.plist_data["IOPlatformPowerProfile"]["optimized_photobooth"] = True
+                self.plist_data["IOPlatformPowerProfile"]["optimized_visualizers"] = True
+            else:
+                print("Skipping.")
+            break
         # Save the changes
         self._display_desc(new_desc)
         print("Saving to {}...".format(self.board+".plist"))
