@@ -1,6 +1,8 @@
 # CPUFriendFriend
 
-This Py script will inspect the frequency vectors of the X86PlatformPlugin plist matching your SMBIOS configuration and leverage acidanthera's CPUFriend ResourceConverter to help you optimize your power management configuration.
+This Py script will inspect the frequency vectors of the X86PlatformPlugin plist matching your SMBIOS configuration and leverage Acidanthera's CPUFriend ResourceConverter to help you optimize your power management configuration.
+
+This script only generates the CPUFriendDataProvider.kext and ssdt_data.dsl/.aml files - those still **require** Acidanthera's [CPUFriend](https://github.com/acidanthera/CPUFriend) kext to function.
 
 ## Low Frequency Mode (LFM)
 
@@ -44,3 +46,7 @@ $ ./CPUFriendFriend.command
 ```
 
 Once completed, you will be presented with both SSDT and Kext versions of CPUFriendDataProvider data.  Choose the method that you prefer, and add it along with CPUFriend.kext to CLOVER.
+
+## Credits
+
+- PMHeart and Acidanthera for creating and maintaining [CPUFriend](https://github.com/acidanthera/CPUFriend)
