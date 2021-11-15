@@ -1,8 +1,10 @@
+[CPUFriend Repo]: https://github.com/acidanthera/CPUFriend
+
 # CPUFriendFriend
 
-This Py script will inspect the frequency vectors of the X86PlatformPlugin plist matching your SMBIOS configuration and leverage Acidanthera's CPUFriend ResourceConverter to help you optimize your power management configuration.
+This Python script will inspect the frequency vectors of the X86PlatformPlugin plist matching your SMBIOS configuration and leverage Acidanthera's CPUFriend ResourceConverter to help you optimize your power management configuration.
 
-This script only generates the CPUFriendDataProvider.kext and ssdt_data.dsl/.aml files - those still **require** Acidanthera's [CPUFriend](https://github.com/acidanthera/CPUFriend) kext to function.
+This script only generates the CPUFriendDataProvider.kext and ssdt_data.dsl/.aml files - those still **require** Acidanthera's [CPUFriend][CPUFriend Repo] kext to function.
 
 ## Low Frequency Mode (LFM)
 
@@ -25,7 +27,7 @@ To find the appropriate frequency for your system, refer to Intel's CPU document
 The EPP value dictates how quickly the CPU will scale from the lowest TDP to full clock rate or turbo.  The EPP accepts a range from 00 to C0, however the table below provides general guidance and are the values used by other operating systems.
 
 |Hex Value|Relative Profile|
-|---|---|
+|---------|----------------|
 |0x00|Performance|
 |0x40|Balance performance|
 |0x80|Balance power|
@@ -49,4 +51,4 @@ Once completed, you will be presented with both SSDT and Kext versions of CPUFri
 
 ## Credits
 
-- PMHeart and Acidanthera for creating and maintaining [CPUFriend](https://github.com/acidanthera/CPUFriend)
+- PMHeart and Acidanthera for creating and maintaining [CPUFriend][CPUFriend Repo]
