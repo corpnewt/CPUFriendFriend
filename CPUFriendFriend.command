@@ -77,7 +77,7 @@ download_py () {
     curl "$url" -o "$tempdir/python.pkg"
     if [ "$?" != "0" ]; then
         echo
-        echo " - Failed to download python installer!"
+        echo " - Failed to download Python installer for OS X Mavericks!"
         echo
         exit $?
     fi
