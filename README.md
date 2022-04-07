@@ -4,6 +4,8 @@ This Py script will inspect the frequency vectors of the X86PlatformPlugin plist
 
 This script only generates the CPUFriendDataProvider.kext and ssdt_data.dsl/.aml files - those still **require** Acidanthera's [CPUFriend](https://github.com/acidanthera/CPUFriend) kext to function.
 
+See [CPUFriend's Instructions](https://github.com/acidanthera/CPUFriend/blob/master/Instructions.md) for when it should (or shouldn't) be used, installation instructions, and other info.
+
 ## Low Frequency Mode (LFM)
 
 LFM is the lowest frequency at which your CPU should operate when completely idle.  This is the first configuration item prompted by CPUFriendFriend.  It allows you the opportunity to optimize beyond what Apple configures as a default for each model, as it may not be the correct match for your CPU.  To determine the LFM, look your CPU up on Intel's Ark website and convert the TDP-down frequency to Hex.
