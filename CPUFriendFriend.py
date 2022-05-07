@@ -5,7 +5,7 @@ from Scripts import *
 class CPUFF:
     def __init__(self):
         self.u = utils.Utils("CPUFriendFriend")
-        self.d = downloader.Downloader()
+        self.dl = downloader.Downloader()
         self.r = run.Run()
         self.scripts = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Scripts")
         self.out     = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Results")
@@ -13,7 +13,7 @@ class CPUFF:
         self.plist = None
         self.plist_data = None
         self.rc_url = "https://raw.githubusercontent.com/acidanthera/CPUFriend/master/Tools/ResourceConverter.sh"
-        self.iasl_url = "https://bitbucket.org/RehabMan/acpica/downloads/iasl.zip"
+        self.iasl_url = "https://raw.githubusercontent.com/acidanthera/MaciASL/master/Dist/iasl-stable"
         self.iasl = self.check_iasl()
         self.freq_path = "/System/Library/Extensions/IOPlatformPluginFamily.kext/Contents/PlugIns/X86PlatformPlugin.kext/Contents/Resources"
         self.has_epp  = False
@@ -27,49 +27,54 @@ class CPUFF:
         self.myepp = None
         self.myperfbias = None
 
-    def check_iasl(self):
-        target = os.path.join(self.scripts, "iasl")
-        if not os.path.exists(target):
-            # Need to download
-            temp = tempfile.mkdtemp()
-            try:
-                self._download_and_extract(temp,self.iasl_url)
-            except:
-                print("An error occurred :(")
-            shutil.rmtree(temp, ignore_errors=True)
-        if os.path.exists(target):
+    def check_iasl(self,try_downloading=True):
+        targets = (
+            os.path.join(self.scripts, "iasl-dev"),
+            os.path.join(self.scripts, "iasl-stable"),
+            os.path.join(self.scripts, "iasl-legacy"),
+            os.path.join(self.scripts, "iasl")
+        )
+        target = next((t for t in targets if os.path.exists(t)),None)
+        if target or not try_downloading:
+            # Either found it - or we didn't, and have already tried downloading
             return target
-        return None
+        # Need to download
+        temp = tempfile.mkdtemp()
+        try:
+            self._download_and_extract(temp,self.iasl_url)
+        except Exception as e:
+            print("An error occurred :(\n - {}".format(e))
+        shutil.rmtree(temp, ignore_errors=True)
+        # Check again after downloading
+        return self.check_iasl(try_downloading=False)
 
     def _download_and_extract(self, temp, url):
         ztemp = tempfile.mkdtemp(dir=temp)
         zfile = os.path.basename(url)
-        self.u.head("Downloading IASL")
-        print("")
         print("Downloading {}".format(os.path.basename(url)))
-        self.d.stream_to_file(url, os.path.join(ztemp,zfile))
-        print("")
-        print(" - Extracting")
-        btemp = tempfile.mkdtemp(dir=temp)
-        # Extract with built-in tools \o/
-        with zipfile.ZipFile(os.path.join(ztemp,zfile)) as z:
-            z.extractall(os.path.join(temp,btemp))
-        script_dir = self.scripts
-        for x in os.listdir(os.path.join(temp,btemp)):
-            if "iasl" in x.lower():
+        self.dl.stream_to_file(url, os.path.join(ztemp,zfile), False)
+        search_dir = ztemp
+        if zfile.lower().endswith(".zip"):
+            print(" - Extracting")
+            search_dir = tempfile.mkdtemp(dir=temp)
+            # Extract with built-in tools \o/
+            with zipfile.ZipFile(os.path.join(ztemp,zfile)) as z:
+                z.extractall(search_dir)
+        for x in os.listdir(search_dir):
+            if x.lower().startswith(("iasl","acpidump")):
                 # Found one
                 print(" - Found {}".format(x))
                 print("   - Chmod +x")
-                self.r.run({"args":["chmod","+x",os.path.join(btemp,x)]})
-                print("   - Copying to {} directory".format(os.path.basename(script_dir)))
-                shutil.copy(os.path.join(btemp,x), os.path.join(script_dir,x))
+                self.r.run({"args":["chmod","+x",os.path.join(search_dir,x)]})
+                print("   - Copying to {} directory".format(os.path.basename(self.scripts)))
+                shutil.copy(os.path.join(search_dir,x), os.path.join(self.scripts,x))
 
     def _get_rc(self, url):
         self.u.head("Downloading ResourceConverter")
         print("")
         target = os.path.join(self.scripts,os.path.basename(url))
         print("Downloading {} from:\n{}".format(os.path.basename(url),url))
-        return self.d.stream_to_file(url, target)
+        return self.dl.stream_to_file(url, target)
 
     def _check_rc(self, url):
         target = os.path.join(self.scripts,os.path.basename(url))
@@ -192,8 +197,8 @@ class CPUFF:
                     print("  1300MHz     :     0x0D")
                     print("\nDefault Setting:    {} ({}00 MHz)\n".format(freq,int(freq,16)))
                     new = self.u.grab("Enter the value for your CPU:  ").upper()
-                    if new == "Q":
-                        exit()
+                    if not len(new): new = freq
+                    elif new == "Q": self.u.custom_quit()
                     self.mylfm = new
                 else:
                     new = self.mylfm
@@ -227,8 +232,8 @@ class CPUFF:
                         # Display the hex, ask for a new value
                         print("Default Setting: {} ({})\n".format(epp,self._get_epp_desc(epp)))
                         new = self.u.grab("Enter the new EPP value in hex:  ").upper()
-                        if new == "Q":
-                            exit()
+                        if not len(new): new = epp
+                        elif new == "Q": self.u.custom_quit()
                         self.myepp = new
                     else:
                         new = self.myepp
@@ -259,8 +264,8 @@ class CPUFF:
                         # Display the hex, ask for a new value
                         print("Default Setting: {} \n".format(perfbias))
                         new = self.u.grab("Enter the new PerfBias value in hex:  ").upper()
-                        if new == "Q":
-                            exit()
+                        if not len(new): new = perfbias
+                        elif new == "Q": self.u.custom_quit()
                         self.myperfbias = new
                     else:
                         new = self.myperfbias
@@ -295,8 +300,10 @@ class CPUFF:
                 self.plist_data["IOPlatformPowerProfile"]["optimized_slideshows"] = True
                 self.plist_data["IOPlatformPowerProfile"]["optimized_photobooth"] = True
                 self.plist_data["IOPlatformPowerProfile"]["optimized_visualizers"] = True
-            else:
+            elif new == "N":
                 print("Skipping.")
+            else:
+                continue
             break
         # Save the changes
         self._display_desc(new_desc)
