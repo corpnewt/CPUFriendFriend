@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, sys, plistlib, zipfile, tempfile, binascii, shutil
+from warnings import warn
 from Scripts import *
 
 class CPUFF:
@@ -43,7 +44,7 @@ class CPUFF:
         try:
             self._download_and_extract(temp,self.iasl_url)
         except Exception as e:
-            print("An error occurred :(\n - {}".format(e))
+            warn("An error occurred :(\n - {}".format(e))
         shutil.rmtree(temp, ignore_errors=True)
         # Check again after downloading
         return self.check_iasl(try_downloading=False)
@@ -336,8 +337,12 @@ class CPUFF:
                     out = self.r.run({"args":[self.iasl,x]})
                     if out[2] != 0:
                         print(out[1])
+            else:
+                warn("iasl not found, SSDT not compiled. Network issue?")
             os.chdir(cwd)
             self.r.run({"args":["open",self.out]})
+        else:
+            warn("ResourceConverter not found, Kext not compiled. Network issue?")
         print("")
         print("Done.")
         exit()
