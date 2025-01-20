@@ -74,7 +74,7 @@ class CPUFF:
         print("")
         target = os.path.join(self.scripts,os.path.basename(url))
         print("Downloading {} from:\n{}".format(os.path.basename(url),url))
-        return self.dl.stream_to_file(url, target)
+        return self.dl.stream_to_file(url, target, allow_resume=False)
 
     def _check_rc(self, url):
         target = os.path.join(self.scripts,os.path.basename(url))
